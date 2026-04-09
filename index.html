@@ -1,126 +1,269 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Docs Fix — AI PDF Editor</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Docs Fix — PDF Editor</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <input
+      type="file"
+      id="filePicker"
+      class="sr-only-input"
+      accept=".pdf,application/pdf"
+      aria-label="Choose PDF file"
+    />
+    <input type="file" id="mergePicker" class="sr-only-input" accept=".pdf,application/pdf" multiple aria-label="Merge PDFs" />
+    <input type="file" id="imagePicker" class="sr-only-input" accept="image/*" aria-label="Insert image" />
 
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;600&display=swap" rel="stylesheet"/>
+    <div class="app-shell">
+      <header class="top-bar">
+        <div class="brand">
+          <img class="brand-logo" src="assets/logo.png" alt="" width="56" height="56" />
+          <span class="brand-text">
+            <span class="brand-doc">Docs</span><span class="brand-fix"> Fix</span>
+          </span>
+        </div>
 
-  <style>
-    body { font-family: 'DM Sans', sans-serif; margin:0; background:#0f172a; color:white; }
-    .top { display:flex; justify-content:space-between; padding:15px; background:#1e293b; }
-    button { padding:10px 15px; border:none; border-radius:6px; cursor:pointer; }
-    #chatBox { position:fixed; right:20px; bottom:20px; width:300px; background:#1e293b; padding:10px; border-radius:10px; display:none; }
-    #chatMessages { height:200px; overflow:auto; font-size:14px; margin-bottom:10px; }
-    input { width:100%; padding:8px; border-radius:5px; border:none; }
-  </style>
-</head>
+        <label class="search-wrap" aria-label="Search">
+          <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8" />
+            <path d="M21 21l-4.35-4.35" />
+          </svg>
+          <input type="search" class="search-input" placeholder="Find text in PDF…" id="searchInput" autocomplete="off" />
+        </label>
 
-<body>
+        <div class="top-actions">
+          <button type="button" class="icon-btn" title="Duplicate page" id="btnDuplicate" aria-label="Duplicate page">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="9" y="9" width="13" height="13" rx="2" />
+              <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
+            </svg>
+          </button>
+          <button type="button" class="icon-btn" title="Document info" id="btnInfo" aria-label="Document info">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10" />
+              <path d="M12 16v-4M12 8h.01" />
+            </svg>
+          </button>
+          <button type="button" class="icon-btn" title="Favorite" aria-label="Favorite">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+            </svg>
+          </button>
+          <button type="button" class="icon-btn" title="More" aria-label="More">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+              <circle cx="5" cy="12" r="2" />
+              <circle cx="12" cy="12" r="2" />
+              <circle cx="19" cy="12" r="2" />
+            </svg>
+          </button>
+        </div>
+      </header>
 
-<div class="top">
-  <h3>📄 Docs Fix AI</h3>
-  <div>
-    <button onclick="openFile()">Open PDF</button>
-    <button onclick="buyAccess()">💳 Unlock AI ($5)</button>
-    <button onclick="toggleChat()">🤖 AI</button>
-  </div>
-</div>
+      <div class="toolbar">
+        <button type="button" class="tool-btn" data-tool="select" title="Drag on the page to select an area, then cut, copy, delete, or color-highlight">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 3l7.07 16.97 2.51-7.39 7.39-2.51L3 3z" />
+          </svg>
+          <span>Select area</span>
+        </button>
+        <button type="button" class="tool-btn active" data-tool="draw" title="Draw">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 19l7-7 3 3-7 7-3-3z" />
+            <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z" />
+          </svg>
+          <span>Draw</span>
+        </button>
+        <button type="button" class="tool-btn" data-tool="highlight" title="Highlight">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 11l3 3L22 4" />
+            <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" />
+          </svg>
+          <span>Highlight</span>
+        </button>
+        <button type="button" class="tool-btn" data-tool="text" title="Click the page to type text on top of the PDF">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 6h16M4 12h10M4 18h14" />
+          </svg>
+          <span>Add text</span>
+        </button>
+        <button type="button" class="tool-btn" data-tool="organize" title="Organize pages">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="7" height="7" rx="1" />
+            <rect x="14" y="3" width="7" height="7" rx="1" />
+            <rect x="14" y="14" width="7" height="7" rx="1" />
+            <rect x="3" y="14" width="7" height="7" rx="1" />
+          </svg>
+          <span>Organize</span>
+        </button>
+        <button type="button" class="tool-btn tool-ghost" id="btnUndo" disabled title="Undo (Ctrl+Z)" aria-label="Undo">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 7v6h6M3 13a9 9 0 109-9c-2.5 0-4.8 1-6.5 2.7L3 7" />
+          </svg>
+          <span>Undo</span>
+        </button>
+        <button type="button" class="tool-btn tool-ghost" id="btnRedo" disabled title="Redo (Ctrl+Y or Ctrl+Shift+Z)" aria-label="Redo">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 7v6h-6M21 13a9 9 0 11-9-9c2.5 0 4.8 1 6.5 2.7L21 7" />
+          </svg>
+          <span>Redo</span>
+        </button>
+        <button type="button" class="tool-btn" id="btnReplaceText" title="Find and replace text on the page (overlay)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 7h16M4 12h8M4 17h12" />
+          </svg>
+          <span>Replace text</span>
+        </button>
+        <button type="button" class="tool-btn" id="btnSignature" title="Draw a signature and place it">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 17h18M6 17V9l4-4 4 4v8" />
+          </svg>
+          <span>Signature</span>
+        </button>
+        <button type="button" class="tool-btn" id="btnInsertImage" title="Insert an image on the page">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="18" height="18" rx="2" />
+            <circle cx="8.5" cy="8.5" r="1.5" />
+            <path d="M21 15l-5-5L5 21" />
+          </svg>
+          <span>Image</span>
+        </button>
+        <button type="button" class="tool-btn" id="btnAnotherPdf" title="Pick a different PDF file">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+            <path d="M14 2v6h6M16 13H8M16 17H8M10 9H8" />
+          </svg>
+          <span>Another PDF</span>
+        </button>
+        <label class="tool-btn tool-btn-file" for="filePicker" title="Open PDF">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+            <path d="M14 2v6h6M12 18v-6M9 15l3 3 3-3" />
+          </svg>
+          <span>Open</span>
+        </label>
+      </div>
 
-<input type="file" id="filePicker" hidden accept="application/pdf"/>
+      <div class="workspace">
+        <aside class="sidebar" aria-label="Page thumbnails">
+          <div class="sidebar-head">Pages</div>
+          <div class="pages-actions">
+            <button type="button" class="pa-btn" id="btnAddPage" title="Add blank page">+ Page</button>
+            <button type="button" class="pa-btn pa-danger" id="btnDelPage" title="Delete current page">− Page</button>
+            <button type="button" class="pa-btn" id="btnMergePdf" title="Append another PDF">Merge</button>
+            <button type="button" class="pa-btn" id="btnSplitPdf" title="Split into two files at current page">Split</button>
+          </div>
+          <p class="dnd-hint">Drag thumbnails to reorder</p>
+          <div class="thumbnails" id="thumbnails"></div>
+        </aside>
 
-<canvas id="pdfCanvas"></canvas>
+        <main class="viewer-area">
+          <div class="viewer-card">
+            <div class="viewer-title-row">
+              <h1 class="doc-title" id="docTitle">Sample Document</h1>
+              <div class="zoom-controls">
+                <button type="button" class="zoom-btn" id="zoomOut" aria-label="Zoom out">−</button>
+                <span class="zoom-label" id="zoomLabel">100%</span>
+                <button type="button" class="zoom-btn" id="zoomIn" aria-label="Zoom in">+</button>
+              </div>
+            </div>
+            <div class="canvas-wrap" id="canvasWrap">
+              <div class="pdf-loading hidden" id="pdfLoading" aria-live="polite">
+                <div class="pdf-loading-inner">
+                  <div class="spinner" aria-hidden="true"></div>
+                  <p>Opening PDF…</p>
+                </div>
+              </div>
+              <div class="empty-state" id="emptyState">
+                <p>Open a PDF to start editing.</p>
+                <label class="primary-outline-btn" for="filePicker">Choose PDF</label>
+              </div>
+              <div class="page-stack hidden" id="pageStack">
+                <div class="page-canvas-inner" id="pageCanvasInner">
+                  <canvas id="pdfCanvas"></canvas>
+                  <canvas id="overlayCanvas"></canvas>
+                  <canvas id="selectionHud" aria-hidden="true"></canvas>
+                </div>
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
 
-<!-- 🤖 CHAT BOX -->
-<div id="chatBox">
-  <div id="chatMessages"></div>
-  <input type="text" id="chatInput" placeholder="Ask about PDF..." onkeydown="sendMessage(event)">
-</div>
+      <footer class="status-bar">
+        <span class="status-text" id="statusText">No file loaded</span>
+        <div class="status-right">
+          <button type="button" class="btn-secondary" id="btnSave" disabled>Save draft</button>
+          <button type="button" class="btn-export" id="btnExport" disabled>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3" />
+            </svg>
+            Export PDF
+          </button>
+        </div>
+      </footer>
+    </div>
 
-<!-- PDF.js -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <div class="toast hidden" id="toast" role="status"></div>
 
-<script>
-pdfjsLib.GlobalWorkerOptions.workerSrc =
-"https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+    <div class="selection-toolbar hidden" id="selectionToolbar" role="dialog" aria-label="Selection actions">
+      <div class="selection-toolbar-row">
+        <button type="button" class="st-btn" id="stCut">Cut</button>
+        <button type="button" class="st-btn" id="stCopy">Copy</button>
+        <button type="button" class="st-btn st-danger" id="stDelete">Delete</button>
+        <button type="button" class="st-btn" id="stRewrite" title="Replace area with new text">Rewrite text</button>
+      </div>
+      <div class="selection-toolbar-label">Add shapes (inside selection)</div>
+      <div class="selection-toolbar-row">
+        <button type="button" class="st-btn" id="stShapeRect">Rectangle</button>
+        <button type="button" class="st-btn" id="stShapeCircle">Circle</button>
+        <button type="button" class="st-btn" id="stShapeArrow">Arrow</button>
+      </div>
+      <div class="selection-toolbar-label">Highlight selection</div>
+      <div class="st-colors" id="stColors"></div>
+    </div>
 
-let hasAccess = false; // 🔐 PAYWALL
+    <div class="search-panel hidden" id="searchPanel" role="listbox" aria-label="Search results">
+      <div class="search-panel-head">
+        <span id="searchPanelTitle">Text matches</span>
+        <button type="button" class="search-close" id="searchPanelClose" aria-label="Close">×</button>
+      </div>
+      <div class="search-results" id="searchResults"></div>
+    </div>
 
-function buyAccess() {
-  alert("💳 Payment system coming soon! (Stripe)");
-  hasAccess = true;
-  alert("✅ Access unlocked (demo)");
-}
+    <dialog class="modal modal-wide" id="signatureDialog">
+      <form method="dialog" id="signatureForm">
+        <h2>Draw signature</h2>
+        <p class="modal-hint">Draw below, then click Place — then click on the PDF.</p>
+        <canvas id="signaturePad" width="400" height="160" class="signature-pad"></canvas>
+        <div class="modal-actions">
+          <button type="button" class="btn-secondary" id="sigClear">Clear</button>
+          <button type="submit" class="primary-outline-btn">Use signature</button>
+        </div>
+      </form>
+    </dialog>
 
-function toggleChat() {
-  if (!hasAccess) {
-    alert("❌ Buy subscription first!");
-    return;
-  }
-  const box = document.getElementById("chatBox");
-  box.style.display = box.style.display === "none" ? "block" : "none";
-}
+    <dialog class="modal" id="infoDialog">
+      <form method="dialog">
+        <h2>Document info</h2>
+        <p id="infoBody" class="modal-body"></p>
+        <button type="submit" class="primary-outline-btn">Close</button>
+      </form>
+    </dialog>
 
-function addMessage(text, sender="user") {
-  const msg = document.createElement("div");
-  msg.innerText = (sender === "user" ? "🧑: " : "🤖: ") + text;
-  document.getElementById("chatMessages").appendChild(msg);
-}
-
-async function sendMessage(e) {
-  if (e.key !== "Enter") return;
-
-  const input = document.getElementById("chatInput");
-  const text = input.value;
-  input.value = "";
-
-  addMessage(text, "user");
-
-  // 🔥 OPENAI API CALL
-  const response = await fetch("https://api.openai.com/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": "Bearer YOUR_API_KEY"
-    },
-    body: JSON.stringify({
-      model: "gpt-4o-mini",
-      messages: [{ role: "user", content: text }]
-    })
-  });
-
-  const data = await response.json();
-  const reply = data.choices[0].message.content;
-
-  addMessage(reply, "ai");
-}
-
-function openFile() {
-  document.getElementById("filePicker").click();
-}
-
-document.getElementById("filePicker").addEventListener("change", async (e) => {
-  const file = e.target.files[0];
-  const reader = new FileReader();
-
-  reader.onload = async function () {
-    const pdf = await pdfjsLib.getDocument(new Uint8Array(this.result)).promise;
-    const page = await pdf.getPage(1);
-
-    const canvas = document.getElementById("pdfCanvas");
-    const ctx = canvas.getContext("2d");
-
-    const viewport = page.getViewport({ scale: 1.5 });
-    canvas.height = viewport.height;
-    canvas.width = viewport.width;
-
-    await page.render({ canvasContext: ctx, viewport }).promise;
-  };
-
-  reader.readAsArrayBuffer(file);
-});
-</script>
-
-</body>
-</html>
+    <script src="vendor/pdf.min.js"></script>
+    <script>
+      pdfjsLib.GlobalWorkerOptions.workerSrc = new URL("vendor/pdf.worker.min.js", window.location.href).href;
+    </script>
+    <script src="vendor/pdf-lib.min.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html> make changes and give me the code that i past and then my project will be work corcltey 
